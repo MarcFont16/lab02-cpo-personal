@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lab 02 - CPO Backend</title>
+  <style>
+    body {
+      font-family: Consolas, "Courier New", monospace;
+      background-color: #1e1e1e;
+      color: #d4d4d4;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 0 20px;
+      line-height: 1.5;
+    }
+
+    h1, h2, h3 {
+      color: #569cd6;
+      font-weight: normal;
+      margin-bottom: 10px;
+    }
+
+    p { margin-bottom: 20px; color: #9cdcfe; }
+
+    a {
+      color: #4fc1ff;
+      text-decoration: none;
+    }
+
+    a:hover { text-decoration: underline; }
+
+    /* Links / Endpoints */
+    .endpoint-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      border: 1px solid #333;
+      background: #252526;
+      padding: 15px;
+      display: block;
+      color: inherit;
+    }
+
+    .card:hover {
+      border-color: #569cd6;
+      background: #2d2d30;
+      text-decoration: none;
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      color: #dcdcaa;
+      margin-bottom: 5px;
+    }
+
+    .tag {
+      color: #ce9178;
+      margin-right: 10px;
+    }
+
+    /* Testing block */
+    .tester {
+      border: 1px solid #333;
+      padding: 20px;
+      background: #252526;
+    }
+
+    .tester-controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    input[type="text"] {
+      background: #1e1e1e;
+      border: 1px solid #333;
+      color: #d4d4d4;
+      padding: 8px;
+      font-family: inherit;
+      flex-grow: 1;
+    }
+
+    button {
+      background: #0e639c;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    button:hover {
+      background: #1177bb;
+    }
+
+    pre {
+      background: #000;
+      border: 1px solid #333;
+      padding: 15px;
+      color: #b5cea8;
+      overflow-x: auto;
+      min-height: 60px;
+      margin: 0;
+    }
+
+    .error { color: #f44747; }
+
+    footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid #333;
+      font-size: 0.9em;
+      color: #808080;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Lab 02: CPO Backend</h1>
+  <p>Spring Boot REST API. Requests to `/log` will save and return the current pod details (name, version, timestamps, trace IDs).</p>
+</header>
+<br>
+
+<div class="endpoint-list">
+  <a class="card" href="/log">
+    <div class="card-title"><span class="tag">GET</span> /log</div>
+    <div>Create and persist a runtime snapshot. Returns pod data.</div>
+  </a>
+
+  <a class="card" href="/swagger-ui.html">
+    <div class="card-title"><span class="tag">UI</span> /swagger-ui.html</div>
+    <div>OpenAPI documentation and interactive test client.</div>
+  </a>
+
+  <a class="card" href="/h2-console">
+    <div class="card-title"><span class="tag">DB</span> /h2-console</div>
+    <div>H2 in-memory DB console. Inspect the LOG_ENTRY table. (use username <b>sa</b> and url <b>jdbc:h2:mem:demo</b>) </div>
+  </a>
+</div>
+
+<div class="tester">
+  <h2>Test Endpoint</h2>
+  <div class="tester-controls">
+    <input type="text" readonly value="/log" />
+    <button onclick="callLog()">Send Request</button>
+  </div>
+  <pre id="response-box">Output will appear here...</pre>
+</div>
+
+<footer>
+  Lab 02 | <a href="/v3/api-docs">OpenAPI JSON</a>
+</footer>
+
+<script>
+  let pendingRequestId = null;
+  let pendingCorrelationId = null;
+
+  function callLog() {
+    const box = document.getElementById('response-box');
+    box.className = '';
+    box.textContent = 'Fetching...';
+
+    const headers = {};
+    if (pendingRequestId) headers['X-Request-Id'] = pendingRequestId;
+    if (pendingCorrelationId) headers['X-Correlation-Id'] = pendingCorrelationId;
+
+    fetch('/log', { headers })
+            .then(res => res.json())
+            .then(data => {
+              pendingRequestId = data.requestId;
+              pendingCorrelationId = data.correlationId;
+              box.textContent = JSON.stringify(data, null, 2);
+            })
+            .catch(err => {
+              box.className = 'error';
+              box.textContent = 'Error: ' + err.message;
+            });
+  }
+</script>
+
+</body>
+</html>
