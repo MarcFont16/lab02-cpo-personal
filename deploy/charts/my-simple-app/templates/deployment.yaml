@@ -36,6 +36,19 @@ spec:
             # Injecting the application port (8080) from values.yaml
             - containerPort: {{ .Values.app.port }}
               name: http
+          # Health checks to monitor the application state (Exercise 6)
+          livenessProbe:
+            httpGet:
+              path: /log
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /log
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
           # Environment variables required by the Spring Boot backend
           env:
             # Application version injected from values.yaml
