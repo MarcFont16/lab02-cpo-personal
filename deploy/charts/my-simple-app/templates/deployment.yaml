@@ -1,0 +1,51 @@
+# This template defines a Kubernetes Deployment to manage the backend application.
+# For more information checkout: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  # The name of the deployment in the cluster
+  name: {{ .Release.Name }}-backend
+  labels:
+    app.kubernetes.io/name: my-simple-app
+spec:
+  # Number of identical Pods to keep running (Resilience and Scaling)
+  replicas: {{ .Values.replicaCount | default 1 }}
+  # Strategy to define how to replace old pods with new ones
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  # Selector to find which Pods are managed by this Deployment
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: my-simple-app
+  # Template for the Pods that the Deployment will create
+  template:
+    metadata:
+      # Labels that MUST match the selector above
+      labels:
+        app.kubernetes.io/name: my-simple-app
+    spec:
+      containers:
+        - name: app
+          # Injecting the repository and tag from values.yaml using Helm templating
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy | default "Always" }}
+          ports:
+            # Injecting the application port (8080) from values.yaml
+            - containerPort: {{ .Values.app.port }}
+              name: http
+          # Environment variables required by the Spring Boot backend
+          env:
+            # Application version injected from values.yaml
+            - name: APP_VERSION
+              value: "{{ .Values.app.version }}"
+            # In-memory H2 database URL (To be updated to PostgreSQL in Lab Phase 4)
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:h2:mem:demo"
+            # Dynamically fetches the assigned name of the Pod from Kubernetes metadata
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
