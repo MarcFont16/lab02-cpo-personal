@@ -1,0 +1,27 @@
+# This template defines a Kubernetes Ingress to expose the backend service to the internet.
+# It acts as a Layer 7 load balancer, routing external HTTP traffic to internal services.
+# For more information checkout: https://kubernetes.io/docs/concepts/services-networking/ingress/
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  # Unique name for the Ingress resource
+  name: {{ .Release.Name }}-ingress
+  annotations:
+    # Specifies the use of the NGINX Ingress Controller for traffic routing
+    kubernetes.io/ingress.class: nginx
+spec:
+  # Specifies the IngressClass to be used by the controller
+  ingressClassName: nginx
+  rules:
+    # Routes traffic based on the Host header of the incoming request
+    - host: {{ .Values.ingress.host | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                # Name of the internal service that will handle the traffic
+                name: my-backend-service
+                port:
+                  number: 80

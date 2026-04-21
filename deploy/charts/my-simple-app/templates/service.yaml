@@ -1,19 +1,20 @@
-# This template defines a Kubernetes Service to provide a stable IP and DNS name for the backend Pod.
+# This template defines a Kubernetes Service to provide a stable internal IP and DNS name.
+# It abstracts the pods' ephemeral IPs into a single, reliable entry point.
 # For more information checkout: https://kubernetes.io/docs/concepts/services-networking/service/
 apiVersion: v1
 kind: Service
 metadata:
-  # The name of the service, which will also be the DNS name within the cluster
+  # The DNS name that other pods in the cluster will use to reach the backend
   name: my-backend-service
 spec:
-  # The selector must match the labels defined in the Pod template to route traffic correctly
+  # Traffic is routed to Pods that match the following labels
   selector:
     app.kubernetes.io/name: my-simple-app
   ports:
     - protocol: TCP
-      # The port that the service exposes inside the cluster
+      # Internal cluster port for the service
       port: 80
-      # The targetPort must match the containerPort defined in the Pod (8080)
+      # Target port on the container where the application is listening
       targetPort: 8080
-  # ClusterIP is the default type, providing a stable internal virtual IP
+  # ClusterIP makes the service only reachable from within the cluster
   type: ClusterIP
