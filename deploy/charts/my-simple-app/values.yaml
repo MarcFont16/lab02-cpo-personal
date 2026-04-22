@@ -30,3 +30,55 @@ ingress:
   enabled: true
   className: "nginx"
   host: "font.polito-cpo-2026.it"
+
+# Default values for my-simple-app.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# This will set the replica count (Deployment). 
+# More information: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+replicaCount: 1
+
+# This sets the container image.
+# More information: https://kubernetes.io/docs/concepts/containers/images/
+image:
+  repository: ghcr.io/polito-cpo-2026/lab-02-backend
+  # This sets the pull policy for images.
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "0.0.1"
+
+# Application specific configuration for the Spring Boot backend.
+app:
+  port: 8080
+  version: "0.0.1"
+
+# This is for the secrets for pulling an image from a private repository.
+# More information: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+imagePullSecrets: []
+
+# PostgreSQL chart configuration (Bitnami)
+# This will be used by the postgresql dependency
+postgresql:
+  image:
+    registry: public.ecr.aws
+    repository: bitnami/postgresql
+    tag: "15"  
+  auth:
+    username: "user"
+    password: "password"
+    database: "test_db"
+  primary:
+    persistence:
+      enabled: false
+
+# Environment variables for the backend to connect to PostgreSQL
+extraEnvVars:
+  - name: SPRING_DATASOURCE_URL
+    value: "jdbc:postgresql://my-simple-app-postgresql:5432/test_db"
+  - name: SPRING_DATASOURCE_USERNAME
+    value: "user"
+  - name: SPRING_DATASOURCE_PASSWORD
+    value: "password"
+  - name: SPRING_DATASOURCE_DRIVER_CLASS_NAME
+    value: "org.postgresql.Driver"

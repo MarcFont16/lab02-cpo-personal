@@ -54,11 +54,11 @@ spec:
             # Application version injected from values.yaml
             - name: APP_VERSION
               value: "{{ .Values.app.version }}"
-            # In-memory H2 database URL (To be updated to PostgreSQL in Lab Phase 4)
-            - name: SPRING_DATASOURCE_URL
-              value: "jdbc:h2:mem:demo"
             # Dynamically fetches the assigned name of the Pod from Kubernetes metadata
             - name: POD_NAME
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
+{{- if .Values.extraEnvVars }}
+{{ toYaml .Values.extraEnvVars | indent 12 }}
+{{- end }}
